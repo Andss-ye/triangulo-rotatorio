@@ -16,70 +16,69 @@ black = (0, 0, 0)
 white = (255, 255, 255)
 
 # Definir las coordenadas de los vértices del triángulo
-x1, y1 = 400, 100
-x2, y2 = 300, 300
-x3, y3 = 500, 300
+triangle_vertices = [(0, -30), (-20, 20), (20, 20)]
 
-# Definir la posición y el ángulo del triángulo
-triangle_x = 400
-triangle_y = 200
+# Definir la posición, velocidad y ángulo de rotación del triángulo
+triangle_x = window_width // 2
+triangle_y = window_height // 2
+triangle_velocity = 0
 triangle_angle = 0
+rotation_speed = 0.2  # Velocidad de rotación más baja para precisión
+move_speed = 0.3  # Velocidad de movimiento
 
-# Definir la velocidad de movimiento y rotación del triángulo
-move_speed = 1
-rotation_speed = 1
+# Función para rotar un punto alrededor del origen
+def rotate_point(point, angle):
+    x, y = point
+    rad_angle = math.radians(angle)
+    new_x = x * math.cos(rad_angle) - y * math.sin(rad_angle)
+    new_y = x * math.sin(rad_angle) + y * math.cos(rad_angle)
+    return new_x, new_y
 
 # Bucle principal del juego
 running = True
 while running:
-    # Verificar eventos
+    # Comprobar eventos
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             running = False
 
-    # Verificar teclas presionadas
+    # Comprobar teclas pulsadas
     keys = pygame.key.get_pressed()
-    if keys[pygame.K_LEFT]:
-        triangle_angle -= rotation_speed
     if keys[pygame.K_RIGHT]:
         triangle_angle += rotation_speed
+    if keys[pygame.K_LEFT]:
+        triangle_angle -= rotation_speed
     if keys[pygame.K_UP]:
-        triangle_y -= move_speed
+        # Calcular el desplazamiento en las coordenadas del triángulo
+        delta_x = move_speed * math.sin(math.radians(triangle_angle))
+        delta_y = move_speed * math.cos(math.radians(triangle_angle))
+        # Actualizar las coordenadas del triángulo
+        if 0 <= triangle_x + delta_x <= window_width and 0 <= triangle_y - delta_y <= window_height:
+            triangle_x += delta_x
+            triangle_y -= delta_y
     if keys[pygame.K_DOWN]:
-        triangle_y += move_speed
+        # Calcular el desplazamiento en las coordenadas del triángulo
+        delta_x = -move_speed * math.sin(math.radians(triangle_angle))
+        delta_y = -move_speed * math.cos(math.radians(triangle_angle))
+        # Actualizar las coordenadas del triángulo
+        if 0 <= triangle_x + delta_x <= window_width and 0 <= triangle_y - delta_y <= window_height:
+            triangle_x += delta_x
+            triangle_y -= delta_y
 
     # Limpiar la ventana
     window.fill(black)
 
-    # Calcular las coordenadas del triángulo rotado
-    rotated_x1 = x1 - triangle_x
-    rotated_y1 = y1 - triangle_y
-    rotated_x2 = x2 - triangle_x
-    rotated_y2 = y2 - triangle_y
-    rotated_x3 = x3 - triangle_x
-    rotated_y3 = y3 - triangle_y
+    # Calcular las coordenadas rotadas del triángulo
+    rotated_vertices = [rotate_point(vertex, triangle_angle) for vertex in triangle_vertices]
 
-    # Aplicar la rotación al triángulo
-    rotated_x1_new = rotated_x1 * math.cos(math.radians(triangle_angle)) - rotated_y1 * math.sin(math.radians(triangle_angle))
-    rotated_y1_new = rotated_x1 * math.sin(math.radians(triangle_angle)) + rotated_y1 * math.cos(math.radians(triangle_angle))
-    rotated_x2_new = rotated_x2 * math.cos(math.radians(triangle_angle)) - rotated_y2 * math.sin(math.radians(triangle_angle))
-    rotated_y2_new = rotated_x2 * math.sin(math.radians(triangle_angle)) + rotated_y2 * math.cos(math.radians(triangle_angle))
-    rotated_x3_new = rotated_x3 * math.cos(math.radians(triangle_angle)) - rotated_y3 * math.sin(math.radians(triangle_angle))
-    rotated_y3_new = rotated_x3 * math.sin(math.radians(triangle_angle)) + rotated_y3 * math.cos(math.radians(triangle_angle))
+    # Trasladar las coordenadas rotadas al lugar correcto en la pantalla
+    translated_vertices = [(x + triangle_x, y + triangle_y) for x, y in rotated_vertices]
 
-    # Calcular las coordenadas del triángulo rotado en la ventana
-    x1_new = rotated_x1_new + triangle_x
-    y1_new = rotated_y1_new + triangle_y
-    x2_new = rotated_x2_new + triangle_x
-    y2_new = rotated_y2_new + triangle_y
-    x3_new = rotated_x3_new + triangle_x
-    y3_new = rotated_y3_new + triangle_y
-
-    # Dibujar el triángulo en la ventana
-    pygame.draw.polygon(window, white, [(x1_new, y1_new), (x2_new, y2_new), (x3_new, y3_new)])
+    # Dibujar el triángulo rotado en la ventana
+    pygame.draw.polygon(window, white, translated_vertices)
 
     # Actualizar la ventana
     pygame.display.update()
 
-# Salir de Pygame
+# Finalizar Pygame
 pygame.quit()
